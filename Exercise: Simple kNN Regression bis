@@ -1,0 +1,83 @@
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define la ruta al archivo CSV
+file_path = os.path.join(os.path.expanduser("~"), "Desktop", "ad.csv")
+
+# Lee el archivo CSV especificando el delimitador correcto
+df_adv = pd.read_csv(file_path, delimiter=',', skipinitialspace=True, skiprows=1, names=["TV", "Radio", "Newspaper", "Sales"])
+
+# Muestra los nombres de las columnas para verificar
+print(df_adv.columns)
+
+# Muestra las primeras filas del DataFrame para verificar
+print(df_adv.head())
+
+# Obtén un subconjunto de los datos, es decir, las filas 5 a 13
+x_true = df_adv['TV'].iloc[5:13]
+y_true = df_adv['Sales'].iloc[5:13]
+
+# Ordena los datos para obtener índices ordenados de menor a mayor valor de TV
+idx = np.argsort(x_true).values
+x_true = x_true.iloc[idx].values
+y_true = y_true.iloc[idx].values
+
+# Define una función que encuentra el índice del vecino más cercano 
+# y devuelve el valor del vecino más cercano.  
+def find_nearest(array, value):
+    idx = pd.Series(np.abs(array - value)).idxmin()
+    return idx, array[idx]
+
+# Crea algunos valores sintéticos de x (puede que no estén en el conjunto de datos real)
+x = np.linspace(np.min(x_true), np.max(x_true))
+
+# Inicializa los valores de y para la longitud de los valores sintéticos de x a cero
+y = np.zeros((len(x)))
+
+# Aplica el algoritmo KNN para predecir el valor de y para el valor de x dado
+def knn_predict(x_true, y_true, x, k):
+    y_pred = np.zeros(len(x))
+    for i, xi in enumerate(x):
+        distances = np.abs(x_true - xi)
+        nearest_indices = np.argsort(distances)[:k]
+        y_pred[i] = np.mean(y_true[nearest_indices])
+    return y_pred
+
+# Valores de k a probar
+k_values = [1, 3, 10]
+colors = ['r', 'g', 'b']
+labels = ['k=1', 'k=3', 'k=10']
+
+# Grafica los datos originales usando x negras.
+plt.plot(x_true, y_true, 'kx', label='Datos originales')
+
+# Aplica el algoritmo KNN para cada valor de k y grafica los resultados
+for k, color, label in zip(k_values, colors, labels):
+    y_pred = knn_predict(x_true, y_true, x, k)
+    plt.plot(x, y_pred, color=color, linestyle='-.', label=label)
+
+# Establece el título y las etiquetas de los ejes
+plt.title('TV vs Sales')
+plt.xlabel('TV budget in $1000')
+plt.ylabel('Sales in $1000')
+plt.legend()
+
+# Muestra la gráfica
+plt.show()
+Index(['TV', 'Radio', 'Newspaper', 'Sales'], dtype='object')
+      TV  Radio  Newspaper  Sales
+0  230.1   37.8       69.2   22.1
+1   44.5   39.3       45.1   10.4
+2   17.2   45.9       69.3    9.3
+3  151.5   41.3       58.5   18.5
+4  180.8   10.8       58.4   12.9
+
+### edTest(test_chow1)###
+#Type your answer within in the quotes given
+answer1='___'
+
+# Type your answer within in the quotes given
+answer1 = 'El mejor valor de k es 3 porque proporciona un equilibrio adecuado entre el ajuste a los datos de prueba y la suavidad de la curva, evitando tanto el overfitting como el underfitting.'
+
